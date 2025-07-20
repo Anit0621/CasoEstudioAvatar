@@ -1,48 +1,57 @@
 #include <iostream>
 #include "Tablero.h"
-#include "Camino.h"
-#include "Abismo.h"
-#include "Salida.h"
 #include "Juego.h"
-#include "Tablero.h"
 #include "LogicaDeMovimiento.h"
 #include "VistaConsola.h"
 #include "Avatar.h"
-#include <cstdlib>
+#include "AvatarCPU.h"
+#include <vector>
 
 int main() {
-    // Crear un tablero (igual que en tu código original)
+    // Configuración inicial
     Tablero tablero;
     tablero.cargarDesdeArchivo("dataTablero.txt");
     
-    // Crear el avatar (igual que en tu código original)
-    Avatar avatar;
-    avatar.setPosicionFila(2);
-    avatar.setPosicionColumna(2);
+    // Creación de personajes
+    Avatar* jugador = new Avatar();
+    AvatarCPU* cpu = new AvatarCPU();
     
-    // Crear la lógica de movimiento (igual que en tu código original)
-    LogicaDeMovimiento logicaDeMovimiento;
+    // Posiciones iniciales
+    jugador->setPosicionFila(2);
+    jugador->setPosicionColumna(2);
+    cpu->setPosicionFila(10);
+    cpu->setPosicionColumna(5);
     
-    // Crear juego (igual que en tu código original)
-    Juego juego(&tablero, &avatar, &logicaDeMovimiento, true);
-    juego.iniciar();
+    // Vector para la vista
+    std::vector<IPersonaje*> personajes = {jugador, cpu};
     
-    VistaConsola vista(&tablero, &avatar);
+    // Sistema del juego
+    LogicaDeMovimiento logica;
+    Juego juego(&tablero, jugador, &logica, true);
+    VistaConsola vista(&tablero, personajes); // Ahora con 2 parámetros correctos
     
-    // Bucle del juego (igual que en tu código original)
-    do {
+    // Bucle principal
+    while(juego.getEstado()) {
         vista.mostrarJuego();
-        vista.mostrarMensaje("Digite su movimiento:");
-        juego.play(vista.getEntradaConsola());
-    } while(juego.getWin() == false && juego.getEstado() == true);
+        vista.mostrarMensaje("Digite su movimiento (WASD):");
+        
+        char input = vista.getEntradaConsola();
+        
+        // Mover personajes
+        jugador->mover(input);
+        cpu->mover(input);
+        
+        juego.play(input);
+    }
 
-    // Mensajes finales (igual que en tu código original)
-    if (juego.getWin() == true) {
-        vista.mostrarMensaje("Ganaste el juego, el total de puntos es:" + std::to_string(juego.getPuntaje()));
+    // Resultado final
+    if(juego.getWin()) {
+        vista.mostrarMensaje("¡Ganaste! Puntos: " + std::to_string(juego.getPuntaje()));
     } else {
-        vista.limpiarPantalla();
-        vista.mostrarMensaje("Perdiste el juego, el total de puntos es:0");
+        vista.mostrarMensaje("¡Perdiste! Caíste en un abismo");
     }
     
+    delete jugador;
+    delete cpu;
     return 0;
 }

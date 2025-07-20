@@ -6,7 +6,8 @@
 class Avatar : public Personaje {
 public:
     Avatar();
-    void mover(char direction) override; // Método override como en el ejemplo del profesor
+    virtual ~Avatar() override = default; // Destructor virtual
+    void mover(char direction) override;
 };
 
 #endif // AVATAR_H
